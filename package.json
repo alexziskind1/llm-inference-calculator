@@ -11,7 +11,11 @@
   },
   "dependencies": {
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-tooltip": "^4.2.21",
+    "react-hook-form": "^7.22.5",
+    "react-draggable": "^4.4.3",
+    "react-resizable": "^3.0.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
