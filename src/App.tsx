@@ -63,17 +63,17 @@ function App() {
   // (A) Bits-based multiplier for the main model
   const getModelQuantFactor = (q: ModelQuantization): number => {
     switch (q) {
-      case 'F32': return 4.0;  
-      case 'F16': return 2.0;  
-      case 'Q8':  return 1.0;  
-      case 'Q6':  return 0.75; 
-      case 'Q5':  return 0.625;
-      case 'Q4':  return 0.5;  
-      case 'Q3':  return 0.375; 
-      case 'Q2':  return 0.25;  
-      case 'GPTQ':return 0.4;  
-      case 'AWQ': return 0.35; 
-      default:    return 1.0;   // fallback
+      case 'F32': return 4.0;
+      case 'F16': return 2.0;
+      case 'Q8': return 1.0;
+      case 'Q6': return 0.75;
+      case 'Q5': return 0.625;
+      case 'Q4': return 0.5;
+      case 'Q3': return 0.375;
+      case 'Q2': return 0.25;
+      case 'GPTQ': return 0.4;
+      case 'AWQ': return 0.35;
+      default: return 1.0;   // fallback
     }
   };
 
@@ -81,12 +81,12 @@ function App() {
   // F32, F16, Q8, Q5, Q4
   const getKvCacheQuantFactor = (k: KvCacheQuantization): number => {
     switch (k) {
-      case 'F32': return 4.0;  
-      case 'F16': return 2.0;  
-      case 'Q8':  return 1.0;  
-      case 'Q5':  return 0.625; 
-      case 'Q4':  return 0.5;  
-      default:    return 1.0;   // fallback
+      case 'F32': return 4.0;
+      case 'F16': return 2.0;
+      case 'Q8': return 1.0;
+      case 'Q5': return 0.625;
+      case 'Q4': return 0.5;
+      default: return 1.0;   // fallback
     }
   };
 
@@ -146,10 +146,10 @@ function App() {
     }
 
     // Discrete GPU
-    const singleGpuVram = 24;
+    const singleGpuVram = gpuVram;
     if (requiredVram <= singleGpuVram) {
       return {
-        gpuType: 'Single 24GB GPU',
+        gpuType: `Single ${singleGpuVram}GB GPU`,
         vramNeeded: requiredVram.toFixed(1),
         fitsUnified: false,
         systemRamNeeded: Math.max(recSystemMemory, requiredVram),
@@ -159,7 +159,7 @@ function App() {
       // multiple GPUs
       const count = Math.ceil(requiredVram / singleGpuVram);
       return {
-        gpuType: 'Discrete GPUs (24GB each)',
+        gpuType: `Discrete GPUs (${singleGpuVram}GB each)`,
         vramNeeded: requiredVram.toFixed(1),
         fitsUnified: false,
         systemRamNeeded: Math.max(recSystemMemory, requiredVram),
@@ -174,15 +174,15 @@ function App() {
     switch (modelQuant) {
       case 'F32': bitsPerParam = 32; break;
       case 'F16': bitsPerParam = 16; break;
-      case 'Q8':  bitsPerParam = 8;  break;
-      case 'Q6':  bitsPerParam = 6;  break;
-      case 'Q5':  bitsPerParam = 5;  break;
-      case 'Q4':  bitsPerParam = 4;  break;
-      case 'Q3':  bitsPerParam = 3;  break;
-      case 'Q2':  bitsPerParam = 2;  break;
-      case 'GPTQ':bitsPerParam = 4;  break;
-      case 'AWQ': bitsPerParam = 4;  break;
-      default:    bitsPerParam = 8;  break;
+      case 'Q8': bitsPerParam = 8; break;
+      case 'Q6': bitsPerParam = 6; break;
+      case 'Q5': bitsPerParam = 5; break;
+      case 'Q4': bitsPerParam = 4; break;
+      case 'Q3': bitsPerParam = 3; break;
+      case 'Q2': bitsPerParam = 2; break;
+      case 'GPTQ': bitsPerParam = 4; break;
+      case 'AWQ': bitsPerParam = 4; break;
+      default: bitsPerParam = 8; break;
     }
 
     const totalBits = params * 1e9 * bitsPerParam;
@@ -190,6 +190,16 @@ function App() {
     const gigabytes = bytes / 1e9;
     const overheadFactor = 1.1; // ~10% overhead
     return gigabytes * overheadFactor;
+  };
+
+    const handleInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    setter: React.Dispatch<React.SetStateAction<number>>
+  ) => {
+    const newValue = Number(event.target.value);
+    if (!isNaN(newValue)) {
+      setter(newValue);
+    }
   };
 
   // -----------------------------------
