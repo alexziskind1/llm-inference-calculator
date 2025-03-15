@@ -146,7 +146,7 @@ function App() {
     }
 
     // Discrete GPU
-    const singleGpuVram = gpuVram;
+    const singleGpuVram = 24; // Example value: 24GB for a single GPU
     if (requiredVram <= singleGpuVram) {
       return {
         gpuType: `Single ${singleGpuVram}GB GPU`,
@@ -192,15 +192,6 @@ function App() {
     return gigabytes * overheadFactor;
   };
 
-    const handleInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-    setter: React.Dispatch<React.SetStateAction<number>>
-  ) => {
-    const newValue = Number(event.target.value);
-    if (!isNaN(newValue)) {
-      setter(newValue);
-    }
-  };
 
   // -----------------------------------
   // 3. CALCULATE & RENDER
