@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import './App.css';
-import Tooltip from 'react-tooltip';
+import { Tooltip } from 'react-tooltip';
 import { useForm } from 'react-hook-form';
-import Draggable from 'react-draggable';
 import { ResizableBox } from 'react-resizable';
 import 'react-resizable/css/styles.css';
 import { ClipLoader } from 'react-spinners';
@@ -201,6 +200,13 @@ function App() {
 
   const onSubmit = (data: any) => {
     setLoading(true);
+    // Use the form data to update state
+    if (data.params) setParams(Number(data.params));
+    if (data.modelQuant) setModelQuant(data.modelQuant as ModelQuantization);
+    if (data.contextLength) setContextLength(Number(data.contextLength));
+    if (data.memoryMode) setMemoryMode(data.memoryMode as MemoryMode);
+    if (data.systemMemory) setSystemMemory(Number(data.systemMemory));
+    
     setTimeout(() => {
       setLoading(false);
     }, 2000);
@@ -217,185 +223,188 @@ function App() {
 
       <div className="layout">
         {/* Left Panel: Inputs */}
-        <Draggable>
-          <ResizableBox width={480} height={400} className="input-panel">
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <h2 className="section-title">Model Configuration</h2>
+        <ResizableBox width={480} height={400} className="input-panel">
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <h2 className="section-title">Model Configuration</h2>
 
-              <label className="label-range" data-tip="Number of parameters in billions">
-                Number of Parameters (Billions): {params}
-              </label>
+            <label className="label-range" data-tooltip-id="param-tooltip" data-tooltip-content="Number of parameters in billions">
+              Number of Parameters (Billions): {params}
+            </label>
+            <input
+              type="range"
+              min={1}
+              max={1000}
+              value={params}
+              {...register("params", { required: true })}
+              onChange={(e) => setParams(Number(e.target.value))}
+            />
+            {errors.params && <span className="error">This field is required</span>}
+
+            <label className="label-range" data-tooltip-id="model-quant-tooltip" data-tooltip-content="Select the model quantization method">
+              Model Quantization:
+            </label>
+            <select
+              value={modelQuant}
+              {...register("modelQuant", { required: true })}
+              onChange={(e) => setModelQuant(e.target.value as ModelQuantization)}
+            >
+              {/* F32, F16, Q8, Q6, Q5, Q4, Q3, Q2, GPTQ, AWQ */}
+              <option value="F32">F32</option>
+              <option value="F16">F16</option>
+              <option value="Q8">Q8</option>
+              <option value="Q6">Q6</option>
+              <option value="Q5">Q5</option>
+              <option value="Q4">Q4</option>
+              <option value="Q3">Q3</option>
+              <option value="Q2">Q2</option>
+              <option value="GPTQ">GPTQ</option>
+              <option value="AWQ">AWQ</option>
+            </select>
+            {errors.modelQuant && <span className="error">This field is required</span>}
+
+            <label className="label-range" data-tooltip-id="context-tooltip" data-tooltip-content="Context length in tokens">
+              Context Length (Tokens): {contextLength}
+            </label>
+            <input
+              type="range"
+              min={128}
+              max={32768}
+              step={128}
+              value={contextLength}
+              {...register("contextLength", { required: true })}
+              onChange={(e) => setContextLength(Number(e.target.value))}
+            />
+            {errors.contextLength && <span className="error">This field is required</span>}
+
+            {/* KV Cache Toggle */}
+            <div className="checkbox-row" data-tooltip-id="kv-cache-tooltip" data-tooltip-content="Enable or disable KV Cache">
               <input
-                type="range"
-                min={1}
-                max={1000}
-                value={params}
-                {...register("params", { required: true })}
-                onChange={(e) => setParams(Number(e.target.value))}
+                type="checkbox"
+                checked={useKvCache}
+                {...register("useKvCache")}
+                onChange={() => setUseKvCache(!useKvCache)}
+                id="kvCache"
               />
-              {errors.params && <span>This field is required</span>}
+              <label htmlFor="kvCache">Enable KV Cache</label>
+            </div>
 
-              <label className="label-range" data-tip="Select the model quantization method">
-                Model Quantization:
+            {/* 
+               (Animated) KV Cache Quant Section:
+               We'll wrap it in a div that transitions "max-height"
+               so the UI doesn't jump abruptly.
+            */}
+            <div className={`kvCacheAnimate ${useKvCache ? "open" : "closed"}`}>
+              <label className="label-range" data-tooltip-id="kv-cache-quant-tooltip" data-tooltip-content="Select the KV Cache quantization method">
+                KV Cache Quantization:
               </label>
               <select
-                value={modelQuant}
-                {...register("modelQuant", { required: true })}
-                onChange={(e) => setModelQuant(e.target.value as ModelQuantization)}
+                value={kvCacheQuant}
+                {...register("kvCacheQuant")}
+                onChange={(e) => setKvCacheQuant(e.target.value as KvCacheQuantization)}
               >
-                {/* F32, F16, Q8, Q6, Q5, Q4, Q3, Q2, GPTQ, AWQ */}
                 <option value="F32">F32</option>
                 <option value="F16">F16</option>
                 <option value="Q8">Q8</option>
-                <option value="Q6">Q6</option>
                 <option value="Q5">Q5</option>
                 <option value="Q4">Q4</option>
-                <option value="Q3">Q3</option>
-                <option value="Q2">Q2</option>
-                <option value="GPTQ">GPTQ</option>
-                <option value="AWQ">AWQ</option>
               </select>
-              {errors.modelQuant && <span>This field is required</span>}
+            </div>
 
-              <label className="label-range" data-tip="Context length in tokens">
-                Context Length (Tokens): {contextLength}
-              </label>
-              <input
-                type="range"
-                min={128}
-                max={32768}
-                step={128}
-                value={contextLength}
-                {...register("contextLength", { required: true })}
-                onChange={(e) => setContextLength(Number(e.target.value))}
-              />
-              {errors.contextLength && <span>This field is required</span>}
+            <hr style={{ margin: '1rem 0' }} />
 
-              {/* KV Cache Toggle */}
-              <div className="checkbox-row" data-tip="Enable or disable KV Cache">
-                <input
-                  type="checkbox"
-                  checked={useKvCache}
-                  {...register("useKvCache")}
-                  onChange={() => setUseKvCache(!useKvCache)}
-                  id="kvCache"
-                />
-                <label htmlFor="kvCache">Enable KV Cache</label>
-              </div>
+            <h2 className="section-title">System Configuration</h2>
 
-              {/* 
-                 (Animated) KV Cache Quant Section:
-                 We'll wrap it in a div that transitions "max-height"
-                 so the UI doesn't jump abruptly.
-              */}
-              <div className={`kvCacheAnimate ${useKvCache ? "open" : "closed"}`}>
-                <label className="label-range" data-tip="Select the KV Cache quantization method">
-                  KV Cache Quantization:
-                </label>
-                <select
-                  value={kvCacheQuant}
-                  {...register("kvCacheQuant")}
-                  onChange={(e) => setKvCacheQuant(e.target.value as KvCacheQuantization)}
-                >
-                  <option value="F32">F32</option>
-                  <option value="F16">F16</option>
-                  <option value="Q8">Q8</option>
-                  <option value="Q5">Q5</option>
-                  <option value="Q4">Q4</option>
-                </select>
-              </div>
+            <label className="label-range" data-tooltip-id="system-type-tooltip" data-tooltip-content="Select the system type">
+              System Type:
+            </label>
+            <select
+              value={memoryMode}
+              {...register("memoryMode", { required: true })}
+              onChange={(e) => setMemoryMode(e.target.value as MemoryMode)}
+            >
+              <option value="DISCRETE_GPU">Discrete GPU</option>
+              <option value="UNIFIED_MEMORY">
+                Unified memory (ex: Apple silicon, AMD Ryzen™ Al Max+ 395)
+              </option>
+            </select>
+            {errors.memoryMode && <span className="error">This field is required</span>}
 
-              <hr style={{ margin: '1rem 0' }} />
+            <label className="label-range" data-tooltip-id="memory-tooltip" data-tooltip-content="System memory in GB">
+              System Memory (GB): {systemMemory}
+            </label>
+            <input
+              type="range"
+              min={8}
+              max={512}
+              step={8}
+              value={systemMemory}
+              {...register("systemMemory", { required: true })}
+              onChange={(e) => setSystemMemory(Number(e.target.value))}
+            />
+            {errors.systemMemory && <span className="error">This field is required</span>}
 
-              <h2 className="section-title">System Configuration</h2>
-
-              <label className="label-range" data-tip="Select the system type">
-                System Type:
-              </label>
-              <select
-                value={memoryMode}
-                {...register("memoryMode", { required: true })}
-                onChange={(e) => setMemoryMode(e.target.value as MemoryMode)}
-              >
-                <option value="DISCRETE_GPU">Discrete GPU</option>
-                <option value="UNIFIED_MEMORY">
-                  Unified memory (ex: Apple silicon, AMD Ryzen™ Al Max+ 395)
-                </option>
-              </select>
-              {errors.memoryMode && <span>This field is required</span>}
-
-              <label className="label-range" data-tip="System memory in GB">
-                System Memory (GB): {systemMemory}
-              </label>
-              <input
-                type="range"
-                min={8}
-                max={512}
-                step={8}
-                value={systemMemory}
-                {...register("systemMemory", { required: true })}
-                onChange={(e) => setSystemMemory(Number(e.target.value))}
-              />
-              {errors.systemMemory && <span>This field is required</span>}
-
-              <button type="submit">Calculate</button>
-            </form>
-          </ResizableBox>
-        </Draggable>
+            <button type="submit">Calculate</button>
+          </form>
+        </ResizableBox>
 
         {/* Right Panel: Results */}
-        <Draggable>
-          <ResizableBox width={440} height={400} className="results-panel">
-            <h2 className="section-title">Hardware Requirements</h2>
+        <ResizableBox width={440} height={400} className="results-panel">
+          <h2 className="section-title">Hardware Requirements</h2>
 
-            {loading ? (
-              <ClipLoader color="#1976d2" loading={loading} size={50} />
-            ) : (
-              <>
-                <p>
-                  <strong>VRAM Needed:</strong>{" "}
-                  <span className="result-highlight">{recommendation.vramNeeded} GB</span>
-                </p>
-                <p>
-                  <strong>On-Disk Size:</strong>{" "}
-                  <span className="result-highlight">{onDiskSize.toFixed(2)} GB</span>
-                </p>
-                <p>
-                  <strong>GPU Config:</strong> {recommendation.gpuType}
-                </p>
+          {loading ? (
+            <ClipLoader color="#1976d2" loading={loading} size={50} />
+          ) : (
+            <>
+              <p>
+                <strong>VRAM Needed:</strong>{" "}
+                <span className="result-highlight">{recommendation.vramNeeded} GB</span>
+              </p>
+              <p>
+                <strong>On-Disk Size:</strong>{" "}
+                <span className="result-highlight">{onDiskSize.toFixed(2)} GB</span>
+              </p>
+              <p>
+                <strong>GPU Config:</strong> {recommendation.gpuType}
+              </p>
 
-                {recommendation.gpusRequired > 1 && (
-                  <p>
-                    <strong>Number of GPUs Required:</strong> {recommendation.gpusRequired}
-                  </p>
-                )}
-                {recommendation.gpusRequired === 1 && (
-                  <p>
-                    <strong>Number of GPUs Required:</strong> 1 (Fits on a single GPU)
-                  </p>
-                )}
-
+              {recommendation.gpusRequired > 1 && (
                 <p>
-                  <strong>System RAM:</strong>{" "}
-                  {recommendation.systemRamNeeded.toFixed(1)} GB
+                  <strong>Number of GPUs Required:</strong> {recommendation.gpusRequired}
                 </p>
+              )}
+              {recommendation.gpusRequired === 1 && (
+                <p>
+                  <strong>Number of GPUs Required:</strong> 1 (Fits on a single GPU)
+                </p>
+              )}
 
-                {memoryMode === 'UNIFIED_MEMORY' && recommendation.fitsUnified && (
-                  <p style={{ color: 'green' }}>
-                    ✅ Fits in unified memory!
-                  </p>
-                )}
-                {memoryMode === 'UNIFIED_MEMORY' && !recommendation.fitsUnified && (
-                  <p style={{ color: 'red' }}>
-                    ⚠️ Exceeds unified memory. Increase system RAM or reduce model size.
-                  </p>
-                )}
-              </>
-            )}
-          </ResizableBox>
-        </Draggable>
+              <p>
+                <strong>System RAM:</strong>{" "}
+                {recommendation.systemRamNeeded.toFixed(1)} GB
+              </p>
+
+              {memoryMode === 'UNIFIED_MEMORY' && recommendation.fitsUnified && (
+                <p style={{ color: 'green' }}>
+                  ✅ Fits in unified memory!
+                </p>
+              )}
+              {memoryMode === 'UNIFIED_MEMORY' && !recommendation.fitsUnified && (
+                <p style={{ color: 'red' }}>
+                  ⚠️ Exceeds unified memory. Increase system RAM or reduce model size.
+                </p>
+              )}
+            </>
+          )}
+        </ResizableBox>
       </div>
-      <Tooltip />
+      
+      {/* Tooltips */}
+      <Tooltip id="param-tooltip" />
+      <Tooltip id="model-quant-tooltip" />
+      <Tooltip id="context-tooltip" />
+      <Tooltip id="kv-cache-tooltip" />
+      <Tooltip id="system-type-tooltip" />
+      <Tooltip id="memory-tooltip" />
     </div>
   );
 }

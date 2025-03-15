@@ -48,9 +48,9 @@ body {
   max-width: 100%;
 }
 
-/* Left panel: fixed or max width so it doesn't expand fully */
+/* Left panel: fixed width and position */
 .input-panel {
-  width: 480px; /* pick a width that suits your design */
+  width: 480px;
   max-height: 85vh;
   overflow-y: auto;
   padding: 1rem;
@@ -58,9 +58,10 @@ body {
   background-color: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: var(--border-radius);
+  position: relative;
 }
 
-/* Right panel: a smaller fixed width, so it won't stretch 100% either */
+/* Right panel: fixed width and position */
 .results-panel {
   width: 440px; /* narrower column */
   position: sticky;
@@ -72,6 +73,7 @@ body {
   padding: 1rem;
   box-sizing: border-box;
   height: fit-content;
+  position: relative;
 }
 
 /* Responsive: if screen < (480 + 300 + gap), stack columns */
@@ -208,4 +210,20 @@ select {
 .resizable-panel {
   resize: both;
   overflow: auto;
+}
+
+/* Resize handles styling */
+.react-resizable-handle {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  cursor: se-resize;
+  width: 20px;
+  height: 20px;
+  background-image: url('data:image/svg+xml;charset=utf-8,%3Csvg width="10" height="10" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 0h10v10H0z" fill="%23666" fill-rule="evenodd"/%3E%3C/svg%3E');
+  background-position: bottom right;
+  padding: 0 3px 3px 0;
+  background-repeat: no-repeat;
+  background-origin: content-box;
+  box-sizing: border-box;
 }
