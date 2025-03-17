@@ -181,9 +181,7 @@ function App() {
             </select>
           </div>
 
-
-
-          <hr style={{ margin: '1rem 0' }} />
+          <hr style={{ margin: "1rem 0" }} />
 
           <h2 className="section-title">System Configuration</h2>
 
@@ -198,7 +196,7 @@ function App() {
             </option>
           </select>
 
-          {memoryMode === 'DISCRETE_GPU' && (
+          {memoryMode === "DISCRETE_GPU" && (
             <>
               <label className="label-range">GPU VRAM (GB):</label>
               <select
@@ -243,31 +241,30 @@ function App() {
                   }
                 />
               </div>
+              <label className="label-range">
+                System Memory (GB):
+                <input
+                  className="text-input-group"
+                  type="number"
+                  min={8}
+                  max={512}
+                  step={8}
+                  value={systemMemory}
+                  onChange={(e) => handleInputChange(e, setSystemMemory)}
+                />
+              </label>
+              <div className="slider-input-group">
+                <input
+                  type="range"
+                  min={8}
+                  max={512}
+                  step={8}
+                  value={systemMemory}
+                  onChange={(e) => setSystemMemory(Number(e.target.value))}
+                />
+              </div>
             </>
           )}
-
-          <label className="label-range">
-            System Memory (GB):
-            <input
-              className="text-input-group"
-              type="number"
-              min={8}
-              max={512}
-              step={8}
-              value={systemMemory}
-              onChange={(e) => handleInputChange(e, setSystemMemory)}
-            />
-          </label>
-          <div className="slider-input-group">
-            <input
-              type="range"
-              min={8}
-              max={512}
-              step={8}
-              value={systemMemory}
-              onChange={(e) => setSystemMemory(Number(e.target.value))}
-            />
-          </div>
         </div>
 
         {/* Right Panel: Results */}
@@ -308,12 +305,13 @@ function App() {
             {recommendation.systemRamNeeded.toFixed(1)} GB
           </p>
 
-          {memoryMode === 'UNIFIED_MEMORY' && recommendation.fitsUnified && (
-            <p style={{ color: 'green' }}>✅ Fits in unified memory!</p>
+          {memoryMode === "UNIFIED_MEMORY" && recommendation.fitsUnified && (
+            <p style={{ color: "green" }}>✅ Fits in unified memory!</p>
           )}
-          {memoryMode === 'UNIFIED_MEMORY' && !recommendation.fitsUnified && (
-            <p style={{ color: 'red' }}>
-              ⚠️ Exceeds unified memory. Increase system RAM or reduce model size.
+          {memoryMode === "UNIFIED_MEMORY" && !recommendation.fitsUnified && (
+            <p style={{ color: "red" }}>
+              ⚠️ Exceeds unified memory. Increase system RAM or reduce model
+              size.
             </p>
           )}
         </div>
