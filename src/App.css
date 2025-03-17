@@ -152,6 +152,11 @@ select {
   font-weight: bold;
 }
 
+.result-standard {
+  color: var(--secondary-color);
+  font-weight: normal;
+}
+
 .section-title {
   margin-top: 0;
   margin-bottom: 1rem;
