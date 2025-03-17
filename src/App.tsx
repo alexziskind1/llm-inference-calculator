@@ -300,10 +300,14 @@ function App() {
             </p>
           )}
 
-          <p>
-            <strong>System RAM:</strong>{" "}
-            {recommendation.systemRamNeeded.toFixed(1)} GB
-          </p>
+          {memoryMode === "UNIFIED_MEMORY" && (
+            <>
+              <p>
+                <strong>System RAM:</strong>{" "}
+                {recommendation.systemRamNeeded.toFixed(1)} GB
+              </p>
+            </>
+          )}
 
           {memoryMode === "UNIFIED_MEMORY" && recommendation.fitsUnified && (
             <p style={{ color: "green" }}>✅ Fits in unified memory!</p>
