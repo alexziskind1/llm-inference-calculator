@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import './App.css';
 import { MemoryMode, ModelQuantization, KvCacheQuantization } from './types';
-import { 
-  calculateHardwareRecommendation, 
-  calculateOnDiskSize
+import {
+  calculateHardwareRecommendation,
+  calculateOnDiskSize,
 } from './calculations';
 
 function App() {
@@ -24,16 +24,17 @@ function App() {
   const [memoryMode, setMemoryMode] = useState<MemoryMode>('DISCRETE_GPU');
   const [systemMemory, setSystemMemory] = useState<number>(128); // in GB
   const [gpuVram, setGpuVram] = useState<number>(24); // in GB, default 24GB
+  const [ramUsage, setRamUsage] = useState<number>(75); // Percentage of system memory usable for LLM (max 90%)
 
   // -----------------------------------
   // 2. HELPER FUNCTIONS
   // -----------------------------------
 
   const handleInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
+    { target: { value } }: React.ChangeEvent<HTMLInputElement>,
     setter: React.Dispatch<React.SetStateAction<number>>
   ) => {
-    const newValue = Number(event.target.value);
+    const newValue = Number(value);
     if (!isNaN(newValue)) {
       setter(newValue);
     }
@@ -42,18 +43,36 @@ function App() {
   // -----------------------------------
   // 3. CALCULATE & RENDER
   // -----------------------------------
-  const recommendation = calculateHardwareRecommendation(
-    params,
-    modelQuant,
-    contextLength,
-    useKvCache,
-    kvCacheQuant,
-    memoryMode,
-    systemMemory,
-    gpuVram
+  const recommendation = useMemo(
+    () =>
+      calculateHardwareRecommendation(
+        params,
+        modelQuant,
+        contextLength,
+        useKvCache,
+        kvCacheQuant,
+        memoryMode,
+        systemMemory,
+        gpuVram,
+        ramUsage
+      ),
+    [
+      params,
+      modelQuant,
+      contextLength,
+      useKvCache,
+      kvCacheQuant,
+      memoryMode,
+      systemMemory,
+      gpuVram,
+      ramUsage,
+    ]
   );
-  
-  const onDiskSize = calculateOnDiskSize(params, modelQuant);
+
+  const onDiskSize = useMemo(
+    () => calculateOnDiskSize(params, modelQuant),
+    [params, modelQuant]
+  );
 
   return (
     <div className="App">
@@ -70,8 +89,9 @@ function App() {
           <h2 className="section-title">Model Configuration</h2>
 
           <label className="label-range">
-            Number of Parameters (Billions): 
-            <input className="text-input-group"
+            Number of Parameters (Billions):
+            <input
+              className="text-input-group"
               type="number"
               min={1}
               max={1000}
@@ -87,7 +107,6 @@ function App() {
               value={params}
               onChange={(e) => setParams(Number(e.target.value))}
             />
-            
           </div>
           <label className="label-range">Model Quantization:</label>
           <select
@@ -109,7 +128,8 @@ function App() {
 
           <label className="label-range">
             Context Length (Tokens):
-            <input className="text-input-group"
+            <input
+              className="text-input-group"
               type="number"
               min={128}
               max={32768}
@@ -127,7 +147,6 @@ function App() {
               value={contextLength}
               onChange={(e) => setContextLength(Number(e.target.value))}
             />
-           
           </div>
 
           {/* KV Cache Toggle */}
@@ -135,7 +154,7 @@ function App() {
             <input
               type="checkbox"
               checked={useKvCache}
-              onChange={() => setUseKvCache(!useKvCache)}
+              onChange={(e) => setUseKvCache(e.target.checked)}
               id="kvCache"
             />
             <label htmlFor="kvCache">Enable KV Cache</label>
@@ -150,7 +169,9 @@ function App() {
             <label className="label-range">KV Cache Quantization:</label>
             <select
               value={kvCacheQuant}
-              onChange={(e) => setKvCacheQuant(e.target.value as KvCacheQuantization)}
+              onChange={(e) =>
+                setKvCacheQuant(e.target.value as KvCacheQuantization)
+              }
             >
               <option value="F32">F32</option>
               <option value="F16">F16</option>
@@ -196,9 +217,39 @@ function App() {
             </>
           )}
 
+          {memoryMode === "UNIFIED_MEMORY" && (
+            <>
+              <label className="label-range">
+                RAM Usage (%):
+                <input
+                  className="text-input-group"
+                  type="number"
+                  min={1}
+                  max={90}
+                  value={ramUsage}
+                  onChange={(e) =>
+                    setRamUsage(Math.min(Number(e.target.value), 90))
+                  }
+                />
+              </label>
+              <div className="slider-input-group">
+                <input
+                  type="range"
+                  min={1}
+                  max={90}
+                  value={ramUsage}
+                  onChange={(e) =>
+                    setRamUsage(Math.min(Number(e.target.value), 90))
+                  }
+                />
+              </div>
+            </>
+          )}
+
           <label className="label-range">
-            System Memory (GB): 
-            <input className="text-input-group"
+            System Memory (GB):
+            <input
+              className="text-input-group"
               type="number"
               min={8}
               max={512}
@@ -207,7 +258,7 @@ function App() {
               onChange={(e) => handleInputChange(e, setSystemMemory)}
             />
           </label>
-           <div className="slider-input-group">
+          <div className="slider-input-group">
             <input
               type="range"
               min={8}
@@ -216,8 +267,7 @@ function App() {
               value={systemMemory}
               onChange={(e) => setSystemMemory(Number(e.target.value))}
             />
-           
-           </div>
+          </div>
         </div>
 
         {/* Right Panel: Results */}
@@ -226,7 +276,12 @@ function App() {
 
           <p>
             <strong>VRAM Needed:</strong>{" "}
-            <span className="result-highlight">{recommendation.vramNeeded} GB</span>
+            <span className="result-highlight">
+              {recommendation.vramNeeded} GB{" "}
+              <span className="result-standard"></span>
+              {memoryMode === "UNIFIED_MEMORY" &&
+                `(with ${ramUsage}% RAM Usage)`}
+            </span>
           </p>
           <p>
             <strong>On-Disk Size:</strong>{" "}
@@ -238,7 +293,8 @@ function App() {
 
           {recommendation.gpusRequired > 1 && (
             <p>
-              <strong>Number of GPUs Required:</strong> {recommendation.gpusRequired}
+              <strong>Number of GPUs Required:</strong>{" "}
+              {recommendation.gpusRequired}
             </p>
           )}
           {recommendation.gpusRequired === 1 && (
@@ -253,9 +309,7 @@ function App() {
           </p>
 
           {memoryMode === 'UNIFIED_MEMORY' && recommendation.fitsUnified && (
-            <p style={{ color: 'green' }}>
-              ✅ Fits in unified memory!
-            </p>
+            <p style={{ color: 'green' }}>✅ Fits in unified memory!</p>
           )}
           {memoryMode === 'UNIFIED_MEMORY' && !recommendation.fitsUnified && (
             <p style={{ color: 'red' }}>
