@@ -67,16 +67,18 @@ export const calculateRequiredVram = (
   let contextMem = 0;
 
   if (inferenceMode === 'incremental') {
+    // Incremental/streaming decoding:
+    // Memory usage is primarily driven by the KV cache if enabled.
     // Start with basic context scaling for all cases
     const contextScale = Math.max(contextLength / 2048, 1);
     contextMem = baseModelMem * contextScale;
 
     // If KV cache is enabled, adjust the memory calculation
     if (useKvCache) {
-        // alphaAt2048 represents the fraction of base model memory used by the KV cache at 2048 tokens.
-        const alphaAt2048 = 0.2;
-        const kvFactor = getKvCacheQuantFactor(kvCacheQuant);
-        contextMem = baseModelMem * alphaAt2048 * contextScale * kvFactor;
+      // alphaAt2048 represents the fraction of base model memory used by the KV cache at 2048 tokens.
+      const alphaAt2048 = 0.2;
+      const kvFactor = getKvCacheQuantFactor(kvCacheQuant);
+      contextMem = baseModelMem * alphaAt2048 * contextScale * kvFactor;
     }
   } else {
     // Bulk forward pass:
