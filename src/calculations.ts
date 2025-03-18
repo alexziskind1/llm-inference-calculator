@@ -78,7 +78,7 @@ export const calculateRequiredVram = (
       // alphaAt2048 represents the fraction of base model memory used by the KV cache at 2048 tokens.
       const alphaAt2048 = 0.2;
       const kvFactor = getKvCacheQuantFactor(kvCacheQuant);
-      contextMem = baseModelMem * alphaAt2048 * contextScale * kvFactor;
+      contextMem = contextMem * alphaAt2048 * kvFactor;
     }
   } else {
     // Bulk forward pass:
