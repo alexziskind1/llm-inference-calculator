@@ -1,11 +1,7 @@
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  font-weight: 500;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -24,8 +20,6 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -52,112 +46,4 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
-
-/* index.css */
-/* ... (Existing styles) */
-.text-input-group {
-  margin: 0px 5px;
-  font-size: 1rem;
-  padding: 1px;
-}
-.input-slider-container {
-  display: flex;
-  align-items: center;
-  gap: 10px; /* Adjust gap as needed */
-}
-
-.number-input {
-  width: 60px; /* Adjust width as needed */
-  padding: 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.range-slider {
-  flex-grow: 1; /* Slider takes up remaining space */
-}
-
-/* Responsive Styles (Example) */
-@media (max-width: 768px) {
-  .layout {
-    flex-direction: column; /* Stack inputs vertically on smaller screens */
-  }
-  .input-panel {
-    width: 100%;
-    box-sizing: border-box;
-  }
-}
-
-/* Add some styling for better visual appeal */
-body {
-  font-family: sans-serif;
-  background-color: #f4f4f4;
-  color: #333;
-}
-
-.App {
-  max-width: 800px;
-  margin: 20px auto;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.section-title {
-  margin-top: 20px;
-  margin-bottom: 10px;
-}
-
-.label-range {
-  display: block;
-  margin-bottom: 5px;
-}
-
-.input-panel {
-  margin-bottom: 20px;
-}
-
-.results-panel {
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-}
-
-.result-highlight {
-  font-weight: bold;
-  color: #007bff;
-}
-
-.checkbox-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.kvCacheAnimate {
-  transition: max-height 0.3s ease-in-out;
-  overflow: hidden;
-}
-
-.kvCacheAnimate.open {
-  max-height: 100px; /* Adjust as needed */
-}
-
-.kvCacheAnimate.closed {
-  max-height: 0;
 }

@@ -6,6 +6,7 @@ import {
   calculateOnDiskSize,
 } from './calculations';
 import { Tooltip } from './components/Tooltip';
+import { ThemeToggle } from './components/ThemeToggle';
 
 function App() {
   // -----------------------------------
@@ -64,6 +65,7 @@ function App() {
 
   return (
     <div className="App">
+      <ThemeToggle />
       <h1>LLM Inference Hardware Calculator</h1>
       <p className="intro-text">
         Estimate VRAM & System RAM for single-user inference (Batch=1).
